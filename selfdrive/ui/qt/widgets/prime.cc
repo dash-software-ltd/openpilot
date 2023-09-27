@@ -30,7 +30,7 @@ void PairingQRWidget::showEvent(QShowEvent *event) {
 void PairingQRWidget::refresh() {
   if (isVisible()) {
     QString pairToken = CommaApi::create_jwt({{"pair", true}});
-    QString qrString = "https://connect.comma.ai/?pair=" + pairToken;
+    QString qrString = "https://bluepilot.app/?pair=" + pairToken;
     this->updateQrCode(qrString);
   }
 }
