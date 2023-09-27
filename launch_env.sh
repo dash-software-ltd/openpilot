@@ -19,3 +19,5 @@ if [ -z "$PASSIVE" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
+export API_HOST="https://api.bluepilot.app"
+export ATHENA_HOST="wss://ws.bluepilot.app"
