@@ -22,6 +22,7 @@ jobs:
       # Run python generate.py
       - name: Run python generate.py
         run: |
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
           python3 generate.py --no-dry-run
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
