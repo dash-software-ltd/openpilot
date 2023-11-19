@@ -126,7 +126,7 @@ def main(push=True):
         # This might make GitHub Actions work
         os.system("cp .git/config comma_openpilot/.git/config")
         logging.info("Pushing branches to origin")
-        os.system("cd comma_openpilot && git push origin --force --all")
+        os.system("cd comma_openpilot && git remote -v && git push origin --force --all")
 
 
 if __name__ == "__main__":
