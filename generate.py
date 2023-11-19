@@ -50,7 +50,7 @@ def generate_html(branches):
     now = datetime.datetime.now()
     now_str = now.strftime("%Y-%m-%d %H:%M:%S UTC")
 
-    header = f"""
+    header = """
 <html>
 <head>
 <title>RetroPilot Fork Generator</title>
@@ -60,6 +60,7 @@ body {
 }
 </style>
 </head>
+""" + f"""
 <body>
 <h1>RetroPilot Fork Generator</h1>
 <p>
@@ -70,7 +71,6 @@ Please see the <a href="https://github.com/dash-software-ltd/openpilot/">README 
 </p>
 """
 
-    # Make it a nested list
     body = ""
     for branch in branches:
         body += f"<h2>{branch}</h2>"
