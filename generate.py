@@ -36,7 +36,7 @@ def generate_branch(branch_name):
     author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
 
     # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
-    os.system("echo 'export API_HOST=\"retropilot.app\"' >> launch_env.sh")
+    os.system("echo 'export API_HOST=\"https://retropilot.app\"' >> launch_env.sh")
 
     # Commit the changes
     os.system("git add launch_env.sh")
