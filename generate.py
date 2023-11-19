@@ -25,6 +25,7 @@ def prepare_op_repo():
     os.system(
         "cd comma_openpilot && git remote set-url origin https://github.com/commaai/openpilot.git"
     )
+    os.system("cd comma_openpilot && git fetch origin")
 
     logging.info("Done setting up openpilot repo.")
 
@@ -37,7 +38,7 @@ def generate_branch(branch_name):
     logging.info("Generating branch %s", branch_name)
 
     # Make sure branch is clean
-    os.system(f"cd comma_openpilot && git fetch origin {branch_name} && git checkout -B {branch_name} origin/{branch_name}")
+    os.system(f"cd comma_openpilot && git checkout -B {branch_name} origin/{branch_name}")
 
     # Get date of current commit
     commit_date = os.popen(
@@ -125,8 +126,7 @@ def main(push=True):
         # This might make GitHub Actions work
         os.system("cp .git/config comma_openpilot/.git/config")
         logging.info("Pushing branches to origin")
-        for branch in branches:
-            os.system(f"cd comma_openpilot && git push --force origin {branch}")
+        os.system("cd comma_openpilot && git push origin --force --all")
 
 
 if __name__ == "__main__":
