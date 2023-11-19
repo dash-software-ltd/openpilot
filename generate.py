@@ -9,62 +9,9 @@ import pprint
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def parse_cars(branch):
-    """
-    Parse the file with ast for a class named "CAR" and get a list of all the cars.
-    We are looking for the values in quotes.
-
-    Exerpt:
-
-    class CAR:
-      # Hyundai
-      ELANTRA = "HYUNDAI ELANTRA 2017"
-      ELANTRA_2021 = "HYUNDAI ELANTRA 2021"
-      ELANTRA_HEV_2021 = "HYUNDAI ELANTRA HYBRID 2021"
-      HYUNDAI_GENESIS = "HYUNDAI GENESIS 2015-2016"
-      IONIQ = "HYUNDAI IONIQ HYBRID 2017-2019"
-
-    `cars` should be an array of strings like this:
-
-    [
-      "HYUNDAI ELANTRA 2017",
-      "HYUNDAI ELANTRA 2021",
-      "HYUNDAI ELANTRA HYBRID 2021",
-      "HYUNDAI GENESIS 2015-2016",
-      "HYUNDAI IONIQ HYBRID 2017-2019"
-      ...
-    ]
-    """
-    # Checkout branch
-    os.system(f"cd comma_openpilot && git checkout --force {branch}")
-
-    # Get a list of values.py underneath the folder
-    # "comma_openpilot/selfdrive/car/"
-
-    paths = []
-    for root, dirs, files in os.walk("comma_openpilot/selfdrive/car/"):
-        paths += [os.path.join(root, f) for f in files if f == "values.py"]
-
-    cars = []
-
-    for path in paths:
-        with open(path, "r") as f:
-            tree = ast.parse(f.read())
-            for node in ast.walk(tree):
-                if isinstance(node, ast.ClassDef) and node.name == "CAR":
-                    for c in node.body:
-                        if isinstance(c, ast.Assign):
-                            cars.append(c.value.s)
-
-    # Log the cars
-    logging.info("Found %d cars in %s", len(cars), branch)
-
-    return cars
-
-
 def prepare_op_repo():
     """
-    Prepare the openpilot repo with master-ci and release3 branches
+    Prepare the openpilot repo
     """
     # Try to clone the repo to comma_openpilot.
     # If it fails, it means it already exists, so we can just pull
@@ -72,44 +19,29 @@ def prepare_op_repo():
     logging.info("Setting up openpilot repo. Ignore errors if it already exists.")
 
     os.system(
-        "git clone -b master-ci https://github.com/commaai/openpilot.git comma_openpilot"
+        f"git clone --filter=blob:none -b master-ci https://github.com/commaai/openpilot.git comma_openpilot"
     )
-    # Make sure that comma_openpilot is usiing that as the origin.
+    # Make sure that comma_openpilot is using that as the origin.
     os.system(
         "cd comma_openpilot && git remote set-url origin https://github.com/commaai/openpilot.git"
-    )
-    os.system("cd comma_openpilot && git fetch origin")
-    os.system(
-        "cd comma_openpilot && git checkout release3 && git reset --hard origin/release3"
-    )
-    os.system(
-        "cd comma_openpilot && git checkout master-ci && git reset --hard origin/master-ci"
     )
 
     logging.info("Done setting up openpilot repo.")
 
 
-def generate_branch(base, car):
+def generate_branch(branch_name):
     """
-    Make a new branch for the car with a hardcoded fingerprint
+    Make a new branch using the RetroPilot API
     """
 
-    # - instead of _ because the keyboard is one tap for - vs two for _
-    # & is AND because & may be too special
-    # Lowercase because there's no caps lock in the keyboard
-    # Remove () because they are special characters and may cause issues
-    branch_name = f"{base}-{car.replace(' ', '-').replace('&', 'AND').replace('(', '').replace(')','').lower()}"
     logging.info("Generating branch %s", branch_name)
-    # Delete branch if it already exists
-    os.system(f"cd comma_openpilot && git branch -D {branch_name}")
-    # Make branch off of base branch
     os.system(
-        f"cd comma_openpilot && git checkout {base} && git checkout -b {branch_name}"
+        f"cd comma_openpilot && git checkout {branch_name} && git checkout -b {branch_name}"
     )
-    # Make sure base branch is clean
-    os.system(f"cd comma_openpilot && git reset --hard origin/{base}")
-    # Append 'export FINGERPRINT="car name"' to the end of launch_env.sh
-    os.system(f"echo 'export FINGERPRINT=\"{car}\"' >> comma_openpilot/launch_env.sh")
+    # Make sure branch is clean
+    os.system(f"cd comma_openpilot && git fetch origin {branch_name} && git checkout -B {branch_name} origin/{branch_name}")
+    # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
+    os.system(f"echo 'export API_HOST=\"retropilot.app\"' >> comma_openpilot/launch_env.sh")
     # Commit the changes
     # Get date of current commit
     commit_date = os.popen(
@@ -120,12 +52,12 @@ def generate_branch(base, car):
     ).read()
 
     os.system(
-        f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Hardcode fingerprint for {car}'"
+        f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'"
     )
     return branch_name
 
 
-def generate_html(base_cars_base_branches):
+def generate_html(branches):
     # Generate a date for the page
     now = datetime.datetime.now()
     now_str = now.strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -133,49 +65,35 @@ def generate_html(base_cars_base_branches):
     header = """
 <html>
 <head>
-<title>Hardcoded Fingerprint comma.ai openpilot Continuous Micro-Fork Generator branches</title>
+<title>RetroPilot Fork Generator</title>
 <style>
 body {
     font-family: sans-serif;
 }
 </style>
-<link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA6OjoAP///wAAAOMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAzMwAAAAAAAzMzMAAAAAADMzMzAAAAAAMjMzMwAAAAAyIzMzAAAAAAMiMzAiAAAAADIjAhEgAAAAAzAiERIAAAAAAiIhESAAAAACIiIREAAAAAAiIiEgAAAAAAIiIiAAAAAAACIiAAAAAAAAAAAAD//wAAw/8AAIH/AAAA/wAAAH8AAAA/AAAAHwAAgA8AAMAHAADgAwAA8AEAAPgBAAD8AQAA/gEAAP8DAAD/hwAA" rel="icon" type="image/x-icon" />
 </head>
 <body>
-<h1>Hardcoded Fingerprint comma.ai openpilot Continuous Micro-Fork Generator branches</h1>
-<p>
-<em>PRESCRIPTION ONLY: Consult your vehicle brand's <a href="https://discord.comma.ai">Discord channel</a> for guidance first.</em>
-</p>
-<p>
-⚠️ Only to be used as a last resort! ⚠️
-</p>
+<h1>RetroPilot Fork Generator</h1>
 <p>
 """ + f"""
 This page was generated on {now_str}.
 </p>
 <p>
-This is a list of all the branches with hardcoded fingerprints generated by the <a href="https://github.com/hardcoded-fp/openpilot/"> Hardcoded Fingerprint comma.ai openpilot Continuous Micro-Fork Generator</a>.
+This is a list of all the branches generated by the <a href="https://github.com/dash-software-ltd/openpilot/">RetroPilot Fork Generator</a>.
 </p>
 <p>
-Please see the <a href="https://github.com/hardcoded-fp/openpilot/">README for guidance and instructions</a>.
+Please see the <a href="https://github.com/dash-software-ltd/openpilot/">README for guidance and instructions</a>.
 </p>
 """
 
     # Make it a nested list
     body = ""
-    for base in base_cars_base_branches:
-        body += f"<h2>{base}</h2>"
-        body += "<ul>"
-        sorted_cars = sorted(base_cars_base_branches[base].keys())
-        for car in sorted_cars:
-            body += f"<li><code>{car}</code>"
-            body += f"<ul>"
-            body += f"<li>Custom Software URL: <code>https://installer.comma.ai/hardcoded-fp/{base_cars_base_branches[base][car]}</code></li>"
-            body += f'<li><a href="https://github.com/hardcoded-fp/openpilot/tree/{base_cars_base_branches[base][car]}">View on GitHub</a></li>'
-            body += f"</ul>"
-            body += f"</li>"
-
-        body += "</ul>"
+    for branch in branches:
+        body += f"<h2>{branch}</h2>"
+        body += f"<ul>"
+        body += f"<li>Custom Software URL: <code>https://installer.comma.ai/dash-software-ltd/{branch}</code></li>"
+        body += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{branch}">View on GitHub</a></li>'
+        body += f"</ul>"
     footer = """
 </body>
 </html>
@@ -189,25 +107,12 @@ Please see the <a href="https://github.com/hardcoded-fp/openpilot/">README for g
 def main(push=True):
     prepare_op_repo()
 
-    base_cars = {}
-    base_branches = ["master-ci", "release3"]
-    for base in base_branches:
-        base_cars[base] = parse_cars(base)
-
-    base_cars_base_branches = {}
-    for base in base_branches:
-        base_cars_base_branches[base] = {}
-        for car in base_cars[base]:
-            branch = generate_branch(base, car)
-            base_cars_base_branches[base][car] = branch
-    logging.info("Done generating branches")
-
-    # Log base_cars_base_branches
-    logging.info("base_cars_base_branches:")
-    logging.info(pprint.pformat(base_cars_base_branches))
+    branches = ["master-ci", "release3", "release2", "commatwo_master"]
+    logging.info("branches:")
+    logging.info(pprint.pformat(branches))
 
     # Generate HTML output
-    generate_html(base_cars_base_branches)
+    generate_html(branches)
 
     if push:
         # Run the command to push to origin all the branches
