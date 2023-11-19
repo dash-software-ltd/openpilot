@@ -16,7 +16,6 @@ def prepare_op_repo():
     logging.info("Setting up openpilot repo.")
 
     os.system("git remote add commaai https://github.com/commaai/openpilot.git")
-    os.system("git fetch commaai")
 
     logging.info("Done setting up openpilot repo.")
 
@@ -29,7 +28,8 @@ def generate_branch(branch_name):
     logging.info("Generating branch %s", branch_name)
 
     # Make sure branch is clean
-    os.system(f"git checkout -B {branch_name} commaai/{branch_name}")
+    os.system(f"git fetch commaai {branch_name}")
+    os.system(f"git checkout -B {branch_name} FETCH_HEAD")
 
     # Get date of current commit
     commit_date = os.popen("git log -1 --format=%cd --date=iso-strict").read()
@@ -110,8 +110,7 @@ def main(push=True):
     if push:
         # Push branches
         logging.info("Pushing branches to origin")
-        os.system("git remote -v")
-        os.system("git branch -a")
+        os.system(f"git fetch origin {branch}")
         os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
 
