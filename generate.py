@@ -54,7 +54,7 @@ def generate_branch(branch_name):
     os.system(
         f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'"
     )
-    os.system(f"cd comma_openpilot && git push origin {branch_name} --force")
+    os.system(f"cd comma_openpilot && git push {branch_name} --force")
 
     return branch_name
 
