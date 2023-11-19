@@ -19,7 +19,7 @@ def prepare_op_repo():
     logging.info("Setting up openpilot repo. Ignore errors if it already exists.")
 
     os.system(
-        f"git clone --filter=blob:none -b master-ci https://github.com/commaai/openpilot.git comma_openpilot"
+        f"git clone -b master-ci https://github.com/commaai/openpilot.git comma_openpilot"
     )
     # Make sure that comma_openpilot is using that as the origin.
     os.system(
