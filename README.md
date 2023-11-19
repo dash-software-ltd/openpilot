@@ -6,37 +6,6 @@ This GitHub repository periodically generates openpilot branches from comma's op
 
 https://dash-software-ltd.github.io/openpilot/
 
-## Installer URLs
-
-| Branch | Installer URL |
-| --- | --- |
-| `master-ci` | `installer.comma.ai/dash-software-ltd/master-ci` |
-| `release3` | `installer.comma.ai/dash-software-ltd/release3` |
-
-<details>
-  <summary>
-    Show comma two branches:
-  </summary>
-  <table>
-    <thead>
-      <tr>
-        <th>Branch</th>
-        <th>Installer URL</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>master-ci</td>
-        <td>installer.comma.ai/dash-software-ltd/master-ci</td>
-      </tr>
-      <tr>
-        <td>release2</td>
-        <td>installer.comma.ai/dash-software-ltd/release2</td>
-      </tr>
-    </tbody>
-  </table>
-</details>
-
 ## FAQ
 
 ### How often are the branches generated?

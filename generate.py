@@ -108,7 +108,7 @@ Please see the <a href="https://github.com/dash-software-ltd/openpilot/">README 
 def main(push=True):
     prepare_op_repo()
 
-    branches = ["master-ci", "release3", "release2", "commatwo_master"]
+    branches = ["master-ci", "release3", "release2"]
     logging.info("branches:")
     logging.info(pprint.pformat(branches))
 
