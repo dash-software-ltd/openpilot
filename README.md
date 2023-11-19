@@ -1,5 +1,13 @@
 # RetroPilot Fork Generator
 
+## What's this?
+
+This GitHub repository periodically generates openpilot branches from comma's openpilot with the API host set to `retropilot.app`.
+
+https://dash-software-ltd.github.io/openpilot/
+
+## Installer URLs
+
 | Branch | Installer URL |
 | --- | --- |
 | `master-ci` | `installer.comma.ai/dash-software-ltd/master-ci` |
@@ -9,18 +17,25 @@
   <summary>
     Show comma two branches:
   </summary>
-
-  | Branch | Installer URL |
-  | --- | --- |
-  | `commatwo_master` | `installer.comma.ai/dash-software-ltd/commatwo_master` |
-  | `release2` | `installer.comma.ai/dash-software-ltd/release2` |
-
+  <table>
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>Installer URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>master-ci</td>
+        <td>installer.comma.ai/dash-software-ltd/master-ci</td>
+      </tr>
+      <tr>
+        <td>release2</td>
+        <td>installer.comma.ai/dash-software-ltd/release2</td>
+      </tr>
+    </tbody>
+  </table>
 </details>
-
-
-This GitHub repository periodically continuously generates openpilot branches off of openpilot's `master-ci`, `release2` and `release3` branches with the API host set to `retropilot.app`.
-
-https://dash-software-ltd.github.io/openpilot/
 
 ## FAQ
 
