@@ -35,14 +35,10 @@ def generate_branch(branch_name):
     """
 
     logging.info("Generating branch %s", branch_name)
-    os.system(
-        f"cd comma_openpilot && git checkout {branch_name} && git checkout -b {branch_name}"
-    )
+
     # Make sure branch is clean
     os.system(f"cd comma_openpilot && git fetch origin {branch_name} && git checkout -B {branch_name} origin/{branch_name}")
-    # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
-    os.system(f"echo 'export API_HOST=\"retropilot.app\"' >> comma_openpilot/launch_env.sh")
-    # Commit the changes
+
     # Get date of current commit
     commit_date = os.popen(
         "cd comma_openpilot && git log -1 --format=%cd --date=iso-strict"
@@ -51,9 +47,14 @@ def generate_branch(branch_name):
         "cd comma_openpilot && git log -1 --format=%ad --date=iso-strict"
     ).read()
 
+    # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
+    os.system(f"echo 'export API_HOST=\"retropilot.app\"' >> comma_openpilot/launch_env.sh")
+
+    # Commit the changes
     os.system(
         f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'"
     )
+
     return branch_name
 
 
@@ -110,6 +111,10 @@ def main(push=True):
     branches = ["master-ci", "release3", "release2", "commatwo_master"]
     logging.info("branches:")
     logging.info(pprint.pformat(branches))
+
+    # Generate branches
+    for branch in branches:
+        generate_branch(branch)
 
     # Generate HTML output
     generate_html(branches)
