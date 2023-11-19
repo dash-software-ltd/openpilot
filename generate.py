@@ -110,8 +110,9 @@ def main(push=True):
     if push:
         # Push branches
         logging.info("Pushing branches to origin")
-        os.system(f"git fetch origin {branch}")
-        os.system(f"git push --no-verify --force --set-upstream origin {branch}")
+        for branch in branches:
+            os.system(f"git fetch origin {branch}")
+            os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
 
 if __name__ == "__main__":
