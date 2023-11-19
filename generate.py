@@ -13,19 +13,10 @@ def prepare_op_repo():
     """
     Prepare the openpilot repo
     """
-    # Try to clone the repo to comma_openpilot.
-    # If it fails, it means it already exists, so we can just pull
-    # the latest changes.
-    logging.info("Setting up openpilot repo. Ignore errors if it already exists.")
+    logging.info("Setting up openpilot repo.")
 
-    os.system(
-        f"git clone -b master-ci https://github.com/commaai/openpilot.git comma_openpilot"
-    )
-    # Make sure that comma_openpilot is using that as the origin.
-    os.system(
-        "cd comma_openpilot && git remote set-url origin https://github.com/commaai/openpilot.git"
-    )
-    os.system("cd comma_openpilot && git fetch origin")
+    os.system("git remote add commaai https://github.com/commaai/openpilot.git")
+    os.system("git fetch commaai")
 
     logging.info("Done setting up openpilot repo.")
 
@@ -38,23 +29,18 @@ def generate_branch(branch_name):
     logging.info("Generating branch %s", branch_name)
 
     # Make sure branch is clean
-    os.system(f"cd comma_openpilot && git checkout -B {branch_name} origin/{branch_name}")
+    os.system(f"git checkout -B {branch_name} commaai/{branch_name}")
 
     # Get date of current commit
-    commit_date = os.popen(
-        "cd comma_openpilot && git log -1 --format=%cd --date=iso-strict"
-    ).read()
-    author_date = os.popen(
-        "cd comma_openpilot && git log -1 --format=%ad --date=iso-strict"
-    ).read()
+    commit_date = os.popen("git log -1 --format=%cd --date=iso-strict").read()
+    author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
 
     # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
-    os.system(f"echo 'export API_HOST=\"retropilot.app\"' >> comma_openpilot/launch_env.sh")
+    os.system("echo 'export API_HOST=\"retropilot.app\"' >> launch_env.sh")
 
     # Commit the changes
-    os.system(
-        f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'"
-    )
+    os.system("git add launch_env.sh")
+    os.system(f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'")
 
     return branch_name
 
@@ -109,7 +95,7 @@ Please see the <a href="https://github.com/dash-software-ltd/openpilot/">README 
 def main(push=True):
     prepare_op_repo()
 
-    branches = ["master-ci", "release3", "release2"]
+    branches = ["master-ci", "release3", "commatwo_master", "release2"]
     logging.info("branches:")
     logging.info(pprint.pformat(branches))
 
@@ -121,12 +107,12 @@ def main(push=True):
     generate_html(branches)
 
     if push:
-        # Run the command to push to origin all the branches
-        # Copy .git/config from this git repo to comma_openpilot repo
-        # This might make GitHub Actions work
-        os.system("cp .git/config comma_openpilot/.git/config")
+        # Push branches
         logging.info("Pushing branches to origin")
-        os.system("cd comma_openpilot && git remote -v && git push origin --force --all")
+        os.system("git remote -v")
+        os.system("git branch -a")
+        for branch in branches:
+            os.system(f"git push origin {branch}")
 
 
 if __name__ == "__main__":

@@ -10,24 +10,26 @@ on:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
     permissions:
-      contents: write
+      contents: write   # to push to the repository
+
     steps:
       - uses: actions/checkout@v3
-      - name: Be GitHub Actions Bot for Git
+
+      - name: Generate branches
         run: |
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-      # Run python generate.py
-      - name: Run python generate.py
-        run: |
-          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
           python3 generate.py --no-dry-run
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: pages
+
   deploy-pages:
     # Add a dependency to the build job
     needs: sync
