@@ -54,7 +54,6 @@ def generate_branch(branch_name):
     os.system(
         f"cd comma_openpilot && git add launch_env.sh && GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'"
     )
-    os.system(f"cd comma_openpilot && git push {branch_name} --force")
 
     return branch_name
 
@@ -119,6 +118,15 @@ def main(push=True):
 
     # Generate HTML output
     generate_html(branches)
+
+    if push:
+        # Run the command to push to origin all the branches
+        # Copy .git/config from this git repo to comma_openpilot repo
+        # This might make GitHub Actions work
+        os.system("cp .git/config comma_openpilot/.git/config")
+        logging.info("Pushing branches to origin")
+        for branch in branches:
+            os.system(f"cd comma_openpilot && git push --force origin {branch}")
 
 
 if __name__ == "__main__":
