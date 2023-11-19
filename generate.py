@@ -112,7 +112,7 @@ def main(push=True):
         logging.info("Pushing branches to origin")
         os.system("git remote -v")
         os.system("git branch -a")
-        os.system(f"git push --force --set-upstream origin {branch}")
+        os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
 
 if __name__ == "__main__":
