@@ -96,7 +96,7 @@ This page was generated at {now_str}.
 def main(push=True):
     prepare_op_repo()
 
-    branches = ["master-ci", "release3", "commatwo_master", "release2"]
+    branches = ["master-ci", "release3"]
     logging.info("branches:")
     logging.info(pprint.pformat(branches))
 
@@ -112,8 +112,7 @@ def main(push=True):
         logging.info("Pushing branches to origin")
         os.system("git remote -v")
         os.system("git branch -a")
-        for branch in branches:
-            os.system(f"git push origin {branch}")
+        os.system(f"git push --force --set-upstream origin {branch}")
 
 
 if __name__ == "__main__":
