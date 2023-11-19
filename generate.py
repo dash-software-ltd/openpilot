@@ -123,7 +123,7 @@ def main(push=True):
         # Run the command to push to origin all the branches
         # Copy .git/config from this git repo to comma_openpilot repo
         # This might make GitHub Actions work
-        os.system("cp .git/config comma_openpilot/.git/config")
+        # os.system("cp .git/config comma_openpilot/.git/config")
         logging.info("Pushing branches to origin")
         os.system("cd comma_openpilot && git push origin --force --all")
 
