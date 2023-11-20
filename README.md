@@ -2,7 +2,7 @@
 
 ## What's this?
 
-This GitHub repository periodically generates openpilot branches from comma's openpilot with the API host set to `retropilot.app`.
+This GitHub repository periodically generates openpilot branches from comma's openpilot with the API host set to `https://retropilot.app`.
 
 https://dash-software-ltd.github.io/openpilot/
 
