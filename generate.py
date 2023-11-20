@@ -108,7 +108,7 @@ def main(push=True):
         generate_branch(branch)
 
     # Generate HTML output
-    generate_html(branches)
+    generate_html(BRANCHES)
 
     if push:
         # Push branches
