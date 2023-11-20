@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 API_HOST = "https://retropilot.app"
-BRANCHES = ["master-ci", "release3", "commatwo_master", "release2"]
+BRANCHES = ["master-ci", "release3", "release2"]
 
 
 def prepare_op_repo():
