@@ -9,6 +9,9 @@ import pprint
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
+BRANCHES = ["master-ci", "release3", "commatwo_master", "release2"]
+
+
 def prepare_op_repo():
     """
     Prepare the openpilot repo
@@ -96,12 +99,11 @@ This page was generated at {now_str}.
 def main(push=True):
     prepare_op_repo()
 
-    branches = ["master-ci", "release3"]
     logging.info("branches:")
-    logging.info(pprint.pformat(branches))
+    logging.info(pprint.pformat(BRANCHES))
 
     # Generate branches
-    for branch in branches:
+    for branch in BRANCHES:
         generate_branch(branch)
 
     # Generate HTML output
@@ -110,7 +112,7 @@ def main(push=True):
     if push:
         # Push branches
         logging.info("Pushing branches to origin")
-        for branch in branches:
+        for branch in BRANCHES:
             os.system(f"git fetch origin {branch}")
             os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
