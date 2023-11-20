@@ -43,7 +43,7 @@ def generate_branch(branch_name):
     os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
 
     # Commit the changes
-    os.system("git add launch_env.sh")
+    os.system("git add -A")
     os.system(f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'")
 
     return branch_name
