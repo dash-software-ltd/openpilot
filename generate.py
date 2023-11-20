@@ -9,6 +9,7 @@ import pprint
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
+API_HOST = "https://retropilot.app"
 BRANCHES = ["master-ci", "release3", "commatwo_master", "release2"]
 
 
@@ -39,7 +40,7 @@ def generate_branch(branch_name):
     author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
 
     # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
-    os.system("echo 'export API_HOST=\"https://retropilot.app\"' >> launch_env.sh")
+    os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
 
     # Commit the changes
     os.system("git add launch_env.sh")
