@@ -23,6 +23,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
+          python3 -m pip install markdown
           python3 generate.py --no-dry-run
 
       - name: Upload Pages artifact
