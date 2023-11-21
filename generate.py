@@ -54,6 +54,9 @@ def generate_branch(branch_name):
 
 
 def generate_html(branches):
+    # Restore docs branch
+    os.system("git checkout --force docs")
+
     # Generate a date for the page
     now = datetime.datetime.now()
     now_str = now.strftime("%Y-%m-%d %H:%M:%S UTC")
