@@ -86,7 +86,7 @@ Please see the <a href="https://github.com/dash-software-ltd/openpilot/">README 
         body += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{branch}">View on GitHub</a></li>'
         body += f"</ul>"
 
-    footer = """
+    footer = f"""
 <hr>
 <p>
 This page was generated at {now_str}.
