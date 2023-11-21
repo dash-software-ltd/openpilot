@@ -10,6 +10,8 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 API_HOST = "https://retropilot.app"
+ATHENA_HOST = "wss://athena.retropilot.app"
+
 BRANCHES = ["master-ci", "release3", "release2"]
 
 
@@ -39,8 +41,9 @@ def generate_branch(branch_name):
     commit_date = os.popen("git log -1 --format=%cd --date=iso-strict").read()
     author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
 
-    # Append 'export API_HOST="retropilot.app"' to the end of launch_env.sh
+    # Customise launch_env.sh
     os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
+    os.system(f"echo 'export ATHENA_HOST=\"{API_HOST}\"' >> launch_env.sh")
 
     # Commit the changes
     os.system("git add -A")
