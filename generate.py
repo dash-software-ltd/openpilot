@@ -13,7 +13,25 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 API_HOST = "https://retropilot.app"
 ATHENA_HOST = "wss://athena.retropilot.app"
 
-BRANCHES = ["master-ci", "release3", "release2"]
+
+def patch_retropilot_api():
+    os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
+    os.system(f"echo 'export ATHENA_HOST=\"{API_HOST}\"' >> launch_env.sh")
+    return "Use RetroPilot API"
+
+
+def patch_max_time_offroad():
+    os.system(f"sed -i 's/MAX_TIME_OFFROAD_S = 30*3600/MAX_TIME_OFFROAD_S = 3*3600/g' selfdrive/thermald/power_monitoring.py")
+    return "Change MAX_TIME_OFFROAD_S to 3 hours"
+
+
+BRANCHES = [
+    # local branch, remote branch, patches
+    ("master-ci", "master-ci", [patch_retropilot_api]),
+    ("release3", "release3", [patch_retropilot_api]),
+    ("release2", "release2", [patch_retropilot_api]),
+    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_max_time_offroad]),
+]
 
 
 def prepare_op_repo():
@@ -27,33 +45,31 @@ def prepare_op_repo():
     logging.info("Done setting up openpilot repo.")
 
 
-def generate_branch(branch_name):
+def generate_branch(local, remote, patches):
     """
-    Make a new branch using the RetroPilot API
+    Make a new branch from remote with patches applied
     """
 
-    logging.info("Generating branch %s", branch_name)
+    logging.info("Generating branch %s", local)
 
     # Make sure branch is clean
-    os.system(f"git fetch commaai {branch_name}")
-    os.system(f"git checkout -B {branch_name} FETCH_HEAD")
+    os.system(f"git fetch commaai {remote}")
+    os.system(f"git checkout -B {local} FETCH_HEAD")
 
     # Get date of current commit
     commit_date = os.popen("git log -1 --format=%cd --date=iso-strict").read()
     author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
 
-    # Customise launch_env.sh
-    os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
-    os.system(f"echo 'export ATHENA_HOST=\"{API_HOST}\"' >> launch_env.sh")
+    # Apply patches to the branch
+    for patch in patches:
+        message = patch()
 
-    # Commit the changes
-    os.system("git add -A")
-    os.system(f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m 'Use RetroPilot API'")
-
-    return branch_name
+        # Commit the patch
+        os.system("git add -A")
+        os.system(f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m '{message}'")
 
 
-def generate_html(branches):
+def generate_html(branch_names):
     # Restore docs branch
     os.system("git checkout --force docs")
 
@@ -84,7 +100,7 @@ code {
         header += "\n"
 
     body = "<hr><h2>Branches</h2>\n"
-    for branch in branches:
+    for branch in branch_names:
         body += f"<h3>{branch}</h3>"
         body += f"<ul>"
         body += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{branch}</code></li>"
@@ -107,20 +123,22 @@ This page was generated at {now_str}.
 def main(push=True):
     prepare_op_repo()
 
+    branch_names = [branch[0] for branch in BRANCHES]
+
     logging.info("branches:")
-    logging.info(pprint.pformat(BRANCHES))
+    logging.info(pprint.pformat(branch_names))
 
     # Generate branches
-    for branch in BRANCHES:
-        generate_branch(branch)
+    for local, remote, patches in BRANCHES:
+        generate_branch(local, remote, patches)
 
     # Generate HTML output
-    generate_html(BRANCHES)
+    generate_html(branch_names)
 
     if push:
         # Push branches
         logging.info("Pushing branches to origin")
-        for branch in BRANCHES:
+        for branch in branch_names:
             os.system(f"git fetch origin {branch}")
             os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
