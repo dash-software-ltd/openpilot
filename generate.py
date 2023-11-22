@@ -21,7 +21,7 @@ def patch_retropilot_api():
 
 
 def patch_max_time_offroad():
-    os.system(f"sed -i 's/MAX_TIME_OFFROAD_S = 30*3600/MAX_TIME_OFFROAD_S = 3*3600/g' selfdrive/thermald/power_monitoring.py")
+    os.system(f"sed -i 's/MAX_TIME_OFFROAD_S = 30\*3600/MAX_TIME_OFFROAD_S = 3*3600/g' selfdrive/thermald/power_monitoring.py")
     return "Change MAX_TIME_OFFROAD_S to 3 hours"
 
 
