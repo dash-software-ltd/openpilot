@@ -3,9 +3,10 @@
 import ast
 import datetime
 import logging
+import markdown
 import os
 import pprint
-import markdown
+import shutil
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -30,6 +31,25 @@ def replace(path: str, old: str, new: str):
         f.write(content)
 
 
+def delete(path: str):
+    shutil.rmtree(path)
+
+
+def patch_assignment(path: str, variable_name: str, value: str):
+    with open(path) as f:
+        content = f.read()
+
+    tree = ast.parse(content)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == variable_name:
+                    node.value = ast.parse(value).body[0].value
+
+    with open(path, "w") as f:
+        f.write(ast.unparse(tree))
+
+
 def patch_retropilot_api() -> str:
     append("launch_env.sh", f"export API_HOST=\"{API_HOST}\"")
     append("launch_env.sh", f"export ATHENA_HOST=\"{ATHENA_HOST}\"")
@@ -47,12 +67,18 @@ def patch_mapbox_token() -> str:
     return "Use custom Mapbox token"
 
 
+def patch_fix_ford() -> str:
+    patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", "FwQueryConfig(requests=[])")
+    return "Fix Ford fingerprinting by removing Nissan fingerprinting"
+
+
 BRANCHES = [
     # local branch, remote branch, patches
     ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_token]),
     ("release3", "release3", [patch_retropilot_api, patch_mapbox_token]),
     ("release2", "release2", [patch_retropilot_api, patch_mapbox_token]),
     ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_mapbox_token, patch_max_time_offroad]),
+    ("incognitojam", "master-ci", [patch_retropilot_api, patch_mapbox_token, patch_max_time_offroad, patch_fix_ford]),
 ]
 
 
