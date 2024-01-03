@@ -2,7 +2,7 @@
 
 ## What's this?
 
-This [GitHub repository](https://github.com/dash-software-ltd/openpilot) periodically generates openpilot branches from comma's openpilot with the API host set to `https://retropilot.app` and athena host set to `https://athena.retropilot.app`.
+This [GitHub repository](https://github.com/dash-software-ltd/openpilot) periodically generates openpilot branches from comma's openpilot with the API host set to `https://api.retropilot.app` and athena host set to `https://ws.retropilot.app`.
 
 ## FAQ
 

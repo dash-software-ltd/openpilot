@@ -10,8 +10,8 @@ import markdown
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-API_HOST = "https://retropilot.app"
-ATHENA_HOST = "wss://athena.retropilot.app"
+API_HOST = "https://api.retropilot.app"
+ATHENA_HOST = "wss://ws.retropilot.app"
 
 
 def patch_retropilot_api():
