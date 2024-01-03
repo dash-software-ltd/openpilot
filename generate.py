@@ -12,25 +12,47 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 API_HOST = "https://api.retropilot.app"
 ATHENA_HOST = "wss://ws.retropilot.app"
+MAPBOX_TOKEN = "pk.eyJ1IjoiaW5jb2duaXRvamFtIiwiYSI6ImNscXh3YjhjZDBmZHEycXFxbzlraGNpbmYifQ.FWma9qR3PCgfqIYFMPdKUQ"
 
 
-def patch_retropilot_api():
-    os.system(f"echo 'export API_HOST=\"{API_HOST}\"' >> launch_env.sh")
-    os.system(f"echo 'export ATHENA_HOST=\"{API_HOST}\"' >> launch_env.sh")
+def append(path: str, content: str, end_of_line="\n"):
+    with open(path, "a") as f:
+        f.write(content + end_of_line)
+
+
+def replace(path: str, old: str, new: str):
+    with open(path) as f:
+        content = f.read()
+
+    content = content.replace(old, new)
+
+    with open(path, "w") as f:
+        f.write(content)
+
+
+def patch_retropilot_api() -> str:
+    append("launch_env.sh", f"export API_HOST=\"{API_HOST}\"")
+    append("launch_env.sh", f"export ATHENA_HOST=\"{ATHENA_HOST}\"")
     return "Use RetroPilot API"
 
 
-def patch_max_time_offroad():
-    os.system(f"sed -i 's/MAX_TIME_OFFROAD_S = 30\*3600/MAX_TIME_OFFROAD_S = 3*3600/g' selfdrive/thermald/power_monitoring.py")
+def patch_max_time_offroad() -> str:
+    replace("selfdrive/thermald/power_monitoring.py", "MAX_TIME_OFFROAD_S = 3*3600", "MAX_TIME_OFFROAD_S = 3*3600")
     return "Change MAX_TIME_OFFROAD_S to 3 hours"
+
+
+# TODO: setup mapbox proxy, removing the need for this
+def patch_mapbox_token() -> str:
+    append("launch_env.sh", f"export MAPBOX_TOKEN=\"{MAPBOX_TOKEN}\"")
+    return "Use custom Mapbox token"
 
 
 BRANCHES = [
     # local branch, remote branch, patches
-    ("master-ci", "master-ci", [patch_retropilot_api]),
-    ("release3", "release3", [patch_retropilot_api]),
-    ("release2", "release2", [patch_retropilot_api]),
-    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_max_time_offroad]),
+    ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_token]),
+    ("release3", "release3", [patch_retropilot_api, patch_mapbox_token]),
+    ("release2", "release2", [patch_retropilot_api, patch_mapbox_token]),
+    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_mapbox_token, patch_max_time_offroad]),
 ]
 
 
