@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 API_HOST = "https://api.retropilot.app"
 ATHENA_HOST = "wss://ws.retropilot.app"
-MAPBOX_TOKEN = "pk.eyJ1IjoiaW5jb2duaXRvamFtIiwiYSI6ImNscXh3YjhjZDBmZHEycXFxbzlraGNpbmYifQ.FWma9qR3PCgfqIYFMPdKUQ"
+MAPS_HOST = "https://maps.retropilot.app"
 
 
 def append(path: str, content: str, end_of_line="\n"):
@@ -61,10 +61,10 @@ def patch_max_time_offroad() -> str:
     return "Change MAX_TIME_OFFROAD_S to 3 hours"
 
 
-# TODO: setup mapbox proxy, removing the need for this
-def patch_mapbox_token() -> str:
-    append("launch_env.sh", f"export MAPBOX_TOKEN=\"{MAPBOX_TOKEN}\"")
-    return "Use custom Mapbox token"
+def patch_mapbox_api():
+    # NOTE: openpilot doesn't support this as an environment variable, only setting the token directly
+    replace("selfdrive/navd/navd.py", "https://maps.comma.ai", MAPS_HOST)
+    return "Use custom Mapbox host"
 
 
 def patch_fix_ford() -> str:
@@ -74,11 +74,11 @@ def patch_fix_ford() -> str:
 
 BRANCHES = [
     # local branch, remote branch, patches
-    ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_token]),
-    ("release3", "release3", [patch_retropilot_api, patch_mapbox_token]),
-    ("release2", "release2", [patch_retropilot_api, patch_mapbox_token]),
-    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_mapbox_token, patch_max_time_offroad]),
-    ("incognitojam", "master-ci", [patch_retropilot_api, patch_mapbox_token, patch_max_time_offroad, patch_fix_ford]),
+    ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_api]),
+    ("release3", "release3", [patch_retropilot_api, patch_mapbox_api]),
+    ("release2", "release2", [patch_retropilot_api]),
+    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_mapbox_api, patch_max_time_offroad]),
+    ("incognitojam", "master-ci", [patch_retropilot_api, patch_mapbox_api, patch_max_time_offroad, patch_fix_ford]),
 ]
 
 
