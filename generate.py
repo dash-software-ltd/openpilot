@@ -74,6 +74,7 @@ def patch_fix_ford() -> str:
 
 BRANCHES = [
     # local branch, remote branch, patches
+    ("master", "master", [patch_retropilot_api, patch_mapbox_api]),
     ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_api]),
     ("release3", "release3", [patch_retropilot_api, patch_mapbox_api]),
     ("release2", "release2", [patch_retropilot_api]),
