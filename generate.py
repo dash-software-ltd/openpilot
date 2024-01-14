@@ -50,14 +50,32 @@ def patch_assignment(path: str, variable_name: str, value: str):
         f.write(ast.unparse(tree))
 
 
+def patch_method_noop(path: str, method_name: str):
+    """Replace method with a no-op 'return' statement"""
+    with open(path) as f:
+        content = f.read()
+
+    tree = ast.parse(content)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == method_name:
+            node.body = [ast.parse("return").body[0]]
+
+    with open(path, "w") as f:
+        f.write(ast.unparse(tree))
+
+
 def patch_retropilot_api() -> str:
-    append("launch_env.sh", f"export API_HOST=\"{API_HOST}\"")
-    append("launch_env.sh", f"export ATHENA_HOST=\"{ATHENA_HOST}\"")
+    append("launch_env.sh", f'export API_HOST="{API_HOST}"')
+    append("launch_env.sh", f'export ATHENA_HOST="{ATHENA_HOST}"')
     return "Use RetroPilot API"
 
 
 def patch_max_time_offroad() -> str:
-    replace("selfdrive/thermald/power_monitoring.py", "MAX_TIME_OFFROAD_S = 3*3600", "MAX_TIME_OFFROAD_S = 3*3600")
+    replace(
+        "selfdrive/thermald/power_monitoring.py",
+        "MAX_TIME_OFFROAD_S = 30*3600",
+        "MAX_TIME_OFFROAD_S = 3*3600",
+    )
     return "Change MAX_TIME_OFFROAD_S to 3 hours"
 
 
@@ -68,18 +86,60 @@ def patch_mapbox_api():
 
 
 def patch_fix_ford() -> str:
-    patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", "FwQueryConfig(requests=[])")
+    value = "FwQueryConfig(requests=[])"
+    patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", value)
     return "Fix Ford fingerprinting by removing Nissan fingerprinting"
+
+
+def patch_athena_log_handler() -> str:
+    patch_method_noop("selfdrive/athena/athenad.py", "log_handler")
+    patch_method_noop("selfdrive/athena/athenad.py", "stat_handler")
+    return "Disable athena log and stat handlers"
 
 
 BRANCHES = [
     # local branch, remote branch, patches
-    ("master", "master", [patch_retropilot_api, patch_mapbox_api]),
-    ("master-ci", "master-ci", [patch_retropilot_api, patch_mapbox_api]),
-    ("release3", "release3", [patch_retropilot_api, patch_mapbox_api]),
-    ("release2", "release2", [patch_retropilot_api]),
-    ("master-ci-3h", "master-ci", [patch_retropilot_api, patch_mapbox_api, patch_max_time_offroad]),
-    ("incognitojam", "master-ci", [patch_retropilot_api, patch_mapbox_api, patch_max_time_offroad, patch_fix_ford]),
+    (
+        "master",
+        "master",
+        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+    ),
+    (
+        "master-ci",
+        "master-ci",
+        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+    ),
+    (
+        "release3",
+        "release3",
+        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+    ),
+    (
+        "release2",
+        "release2",
+        [patch_retropilot_api, patch_athena_log_handler],
+    ),
+    (
+        "master-ci-3h",
+        "master-ci",
+        [
+            patch_retropilot_api,
+            patch_athena_log_handler,
+            patch_mapbox_api,
+            patch_max_time_offroad,
+        ],
+    ),
+    (
+        "incognitojam",
+        "master-ci",
+        [
+            patch_retropilot_api,
+            patch_mapbox_api,
+            patch_athena_log_handler,
+            patch_max_time_offroad,
+            patch_fix_ford,
+        ],
+    ),
 ]
 
 
@@ -108,6 +168,7 @@ def generate_branch(local, remote, patches):
     # Get date of current commit
     commit_date = os.popen("git log -1 --format=%cd --date=iso-strict").read()
     author_date = os.popen("git log -1 --format=%ad --date=iso-strict").read()
+    env = f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}'"
 
     # Apply patches to the branch
     for patch in patches:
@@ -115,7 +176,7 @@ def generate_branch(local, remote, patches):
 
         # Commit the patch
         os.system("git add -A")
-        os.system(f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}' git commit -m '{message}'")
+        os.system(f"{env} git commit -m '{message}'")
 
 
 def generate_html(branch_names):
@@ -151,10 +212,10 @@ code {
     body = "<hr><h2>Branches</h2>\n"
     for branch in branch_names:
         body += f"<h3>{branch}</h3>"
-        body += f"<ul>"
+        body += "<ul>"
         body += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{branch}</code></li>"
         body += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{branch}">View on GitHub</a></li>'
-        body += f"</ul>\n"
+        body += "</ul>\n"
 
     footer = f"""<hr>
 <p>
