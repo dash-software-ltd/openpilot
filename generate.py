@@ -15,6 +15,9 @@ API_HOST = "https://api.retropilot.app"
 ATHENA_HOST = "wss://ws.retropilot.app"
 MAPS_HOST = "https://maps.retropilot.app"
 
+FILE_ATHENAD = "selfdrive/athena/athenad.py"
+FILE_NAVD = "selfdrive/navd/navd.py"
+
 
 def append(path: str, content: str, end_of_line="\n"):
     with open(path, "a") as f:
@@ -64,37 +67,54 @@ def patch_method_noop(path: str, method_name: str):
         f.write(ast.unparse(tree))
 
 
-def patch_retropilot_api() -> str:
+def patch_api() -> str:
     append("launch_env.sh", f'export API_HOST="{API_HOST}"')
     append("launch_env.sh", f'export ATHENA_HOST="{ATHENA_HOST}"')
-    return "Use RetroPilot API"
+    return "api: update host"
 
 
-def patch_max_time_offroad() -> str:
+def patch_power_monitoring() -> str:
     replace(
         "selfdrive/thermald/power_monitoring.py",
         "MAX_TIME_OFFROAD_S = 30*3600",
         "MAX_TIME_OFFROAD_S = 3*3600",
     )
-    return "Change MAX_TIME_OFFROAD_S to 3 hours"
+    return "thermald: set MAX_TIME_OFFROAD_S to 3 hours"
 
 
-def patch_mapbox_api():
+def patch_nav():
     # NOTE: openpilot doesn't support this as an environment variable, only setting the token directly
     replace("selfdrive/navd/navd.py", "https://maps.comma.ai", MAPS_HOST)
-    return "Use custom Mapbox host"
+    return "navd: use custom maps proxy"
 
 
-def patch_fix_ford() -> str:
+def patch_ford() -> str:
     value = "FwQueryConfig(requests=[])"
     patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", value)
-    return "Fix Ford fingerprinting by removing Nissan fingerprinting"
+    return "ford: remove conflicting nissan fw queries"
 
 
 def patch_athena_log_handler() -> str:
-    patch_method_noop("selfdrive/athena/athenad.py", "log_handler")
-    patch_method_noop("selfdrive/athena/athenad.py", "stat_handler")
-    return "Disable athena log and stat handlers"
+    patch_method_noop(FILE_ATHENAD, "log_handler")
+    patch_method_noop(FILE_ATHENAD, "stat_handler")
+    return "athena: disable log and stat handlers"
+
+
+def patch_athena_fix_recv() -> str:
+    replace(
+        FILE_ATHENAD,
+        "if opcode in (ABNF.OPCODE_TEXT, ABNF.OPCODE_BINARY):",
+        "if opcode == ABNF.OPCODE_TEXT:",
+    )
+    return "athena: ignore binary messages"
+
+
+def patch_athena() -> str:
+    return (
+        "athena: tweaks and bug fixes\n"
+        + f"- {patch_athena_log_handler()}\n"
+        + f"- {patch_athena_fix_recv()}\n"
+    )
 
 
 BRANCHES = [
@@ -102,43 +122,32 @@ BRANCHES = [
     (
         "master",
         "master",
-        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+        [patch_api, patch_nav, patch_athena],
     ),
     (
         "master-ci",
         "master-ci",
-        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+        [patch_api, patch_nav, patch_athena],
     ),
     (
         "release3",
         "release3",
-        [patch_retropilot_api, patch_mapbox_api, patch_athena_log_handler],
+        [patch_api, patch_nav, patch_athena],
     ),
     (
         "release2",
         "release2",
-        [patch_retropilot_api, patch_athena_log_handler],
+        [patch_api, patch_athena],
     ),
     (
         "master-ci-3h",
         "master-ci",
-        [
-            patch_retropilot_api,
-            patch_athena_log_handler,
-            patch_mapbox_api,
-            patch_max_time_offroad,
-        ],
+        [patch_api, patch_athena, patch_nav, patch_power_monitoring],
     ),
     (
         "incognitojam",
         "master-ci",
-        [
-            patch_retropilot_api,
-            patch_mapbox_api,
-            patch_athena_log_handler,
-            patch_max_time_offroad,
-            patch_fix_ford,
-        ],
+        [patch_api, patch_nav, patch_athena, patch_power_monitoring, patch_ford],
     ),
 ]
 
