@@ -141,11 +141,6 @@ def patch_athena() -> str:
 BRANCHES = [
     # local branch, remote branch, patches
     (
-        "master",
-        "master",
-        [patch_api, patch_nav, patch_athena],
-    ),
-    (
         "master-ci",
         "master-ci",
         [patch_api, patch_nav, patch_athena],
