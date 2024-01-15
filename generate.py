@@ -48,11 +48,18 @@ class ASTWriter(object):
         with open(self.path, "r") as f:
             content = f.read()
         self.tree = ast.parse(content)
+
+        self.interpreter = None
+        if content.startswith("#!"):
+            self.interpreter = content[0:content.index("\n") + 1]
+
         return self.tree
 
     def __exit__(self, *args):
         content = ast.unparse(self.tree)
         with open(self.path, "w") as f:
+            if self.interpreter:
+                f.write(self.interpreter)
             f.write(content + "\n")
 
 
