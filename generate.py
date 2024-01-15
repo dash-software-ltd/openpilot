@@ -3,10 +3,12 @@
 import ast
 import datetime
 import logging
-import markdown
 import os
 import pprint
 import shutil
+from types import CodeType
+
+import markdown
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -27,9 +29,9 @@ def append(path: str, content: str, end_of_line="\n"):
 def replace(path: str, old: str, new: str):
     with open(path) as f:
         content = f.read()
-
+    if old not in content:
+        raise ValueError(f"Old value '{old}' not found in {path}")
     content = content.replace(old, new)
-
     with open(path, "w") as f:
         f.write(content)
 
@@ -38,33 +40,40 @@ def delete(path: str):
     shutil.rmtree(path)
 
 
+class ASTWriter(object):
+    def __init__(self, path: str):
+        self.path = path
+
+    def __enter__(self) -> CodeType:
+        with open(self.path, "r") as f:
+            content = f.read()
+        self.tree = ast.parse(content)
+        return self.tree
+
+    def __exit__(self, *args):
+        content = ast.unparse(self.tree)
+        with open(self.path, "w") as f:
+            f.write(content + "\n")
+
+
 def patch_assignment(path: str, variable_name: str, value: str):
-    with open(path) as f:
-        content = f.read()
-
-    tree = ast.parse(content)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign):
+    with ASTWriter(path) as tree:
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign):
+                continue
             for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == variable_name:
-                    node.value = ast.parse(value).body[0].value
-
-    with open(path, "w") as f:
-        f.write(ast.unparse(tree))
+                if not isinstance(target, ast.Name) or target.id != variable_name:
+                    continue
+                node.value = ast.parse(value).body[0].value
 
 
 def patch_method_noop(path: str, method_name: str):
     """Replace method with a no-op 'return' statement"""
-    with open(path) as f:
-        content = f.read()
-
-    tree = ast.parse(content)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == method_name:
+    with ASTWriter(path) as tree:
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.FunctionDef) or node.name != method_name:
+                continue
             node.body = [ast.parse("return").body[0]]
-
-    with open(path, "w") as f:
-        f.write(ast.unparse(tree))
 
 
 def patch_api() -> str:
@@ -114,8 +123,8 @@ def patch_athena_add_ping() -> str:
         FILE_ATHENAD,
         "@dispatcher.add_method\n"
         + "def ping() -> None:\n"
-        + "last_ping = int(time.monotonic() * 1e9)\n"
-        + "Params().put('LastAthenaPingTime', str(last_ping))\n",
+        + "  last_ping = int(time.monotonic() * 1e9)\n"
+        + "  Params().put('LastAthenaPingTime', str(last_ping))\n",
     )
     return "athena: add ping method"
 
