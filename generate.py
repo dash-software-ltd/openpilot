@@ -109,11 +109,23 @@ def patch_athena_fix_recv() -> str:
     return "athena: ignore binary messages"
 
 
+def patch_athena_add_ping() -> str:
+    append(
+        FILE_ATHENAD,
+        "@dispatcher.add_method\n"
+        + "def ping() -> None:\n"
+        + "last_ping = int(time.monotonic() * 1e9)\n"
+        + "Params().put('LastAthenaPingTime', str(last_ping))\n",
+    )
+    return "athena: add ping method"
+
+
 def patch_athena() -> str:
     return (
         "athena: tweaks and bug fixes\n"
         + f"- {patch_athena_log_handler()}\n"
         + f"- {patch_athena_fix_recv()}\n"
+        + f"- {patch_athena_add_ping()}\n"
     )
 
 
