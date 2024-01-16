@@ -51,7 +51,7 @@ class ASTWriter(object):
 
         self.interpreter = None
         if content.startswith("#!"):
-            self.interpreter = content[0:content.index("\n") + 1]
+            self.interpreter = content[0 : content.index("\n") + 1]
 
         return self.tree
 
@@ -83,6 +83,15 @@ def patch_method_noop(path: str, method_name: str):
             node.body = [ast.parse("return").body[0]]
 
 
+def patch_method(path: str, method_name: str, code: str):
+    """Replace method with custom code"""
+    with ASTWriter(path) as tree:
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.FunctionDef) or node.name != method_name:
+                continue
+            node.body = ast.parse(code).body
+
+
 def patch_api() -> str:
     append("launch_env.sh", f'export API_HOST="{API_HOST}"')
     append("launch_env.sh", f'export ATHENA_HOST="{ATHENA_HOST}"')
@@ -110,22 +119,10 @@ def patch_ford() -> str:
     return "ford: remove conflicting nissan fw queries"
 
 
-def patch_athena_log_handler() -> str:
+def patch_athena() -> str:
     patch_method_noop(FILE_ATHENAD, "log_handler")
     patch_method_noop(FILE_ATHENAD, "stat_handler")
-    return "athena: disable log and stat handlers"
 
-
-def patch_athena_fix_recv() -> str:
-    replace(
-        FILE_ATHENAD,
-        "if opcode in (ABNF.OPCODE_TEXT, ABNF.OPCODE_BINARY):",
-        "if opcode == ABNF.OPCODE_TEXT:",
-    )
-    return "athena: ignore binary messages"
-
-
-def patch_athena_add_ping() -> str:
     append(
         FILE_ATHENAD,
         "@dispatcher.add_method\n"
@@ -133,15 +130,33 @@ def patch_athena_add_ping() -> str:
         + "  last_ping = int(time.monotonic() * 1e9)\n"
         + "  Params().put('LastAthenaPingTime', str(last_ping))\n",
     )
-    return "athena: add ping method"
 
+    patch_method(
+        FILE_ATHENAD,
+        "ws_recv",
+        "while not end_event.is_set():\n"
+        + "  try:\n"
+        + "    opcode, data = ws.recv_data(control_frame=True)\n"
+        + "    if opcode == ABNF.OPCODE_TEXT:\n"
+        + "      data = data.decode('utf-8')\n"
+        + "      recv_queue.put_nowait(data)\n"
+        + "  except WebSocketTimeoutException:\n"
+        + "    last_ping = int(Params().get('LastAthenaPingTime') or b'0')\n"
+        + "    ns_since_last_ping = int(time.monotonic() * 1e9) - last_ping\n"
+        + "    if ns_since_last_ping > RECONNECT_TIMEOUT_S * 1e9:\n"
+        + "      cloudlog.exception('athenad.ws_recv.timeout')\n"
+        + "      end_event.set()\n"
+        + "  except Exception:\n"
+        + "    cloudlog.exception('athenad.ws_recv.exception')\n"
+        + "    end_event.set()\n",
+    )
 
-def patch_athena() -> str:
     return (
-        "athena: tweaks and bug fixes\n"
-        + f"- {patch_athena_log_handler()}\n"
-        + f"- {patch_athena_fix_recv()}\n"
-        + f"- {patch_athena_add_ping()}\n"
+        "athenad: tweaks and bug fixes\n"
+        + "- disable log and stat handlers\n"
+        + "- add ping method\n"
+        + "- ws_recv: ignore binary messages\n"
+        + "- ws_recv: update last ping time check\n"
     )
 
 
