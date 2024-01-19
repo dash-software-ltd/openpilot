@@ -165,6 +165,20 @@ def patch_athena() -> str:
     )
 
 
+def list_supported_hardware() -> list[str]:
+    path = "system/hardware" if os.path.isdir("system/hardware") else "selfdrive/hardware"
+    return filter(lambda x: os.path.isdir(f"{path}/{x}") and x != "pc", os.listdir(path))
+
+
+def hardware_human_readable(hardware: str) -> str:
+    if hardware == "eon":
+        return "comma two"
+    elif hardware == "tici":
+        return "comma three"
+    else:
+        return None
+
+
 BRANCHES = [
     # local branch, remote branch, patches
     (
@@ -237,8 +251,11 @@ def generate_branch(local, remote, patches) -> str:
         os.system("git add -A")
         os.system(f"{env} git commit -m '{message}'")
 
+    supported_hardware = map(hardware_human_readable, list_supported_hardware())
+
     output = f"<h3>{local}</h3>"
     output += "<ul>"
+    output += f"<li>Supported hardware: {', '.join(supported_hardware)}</li>"
     output += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{local}</code></li>"
     output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{local}">View source code on GitHub</a></li>'
     output += "<li><details><summary>Change log:</summary>"
