@@ -261,7 +261,14 @@ def generate_branch(local, remote, patches) -> str:
     output += "<li><details><summary>Change log:</summary>"
     output += "<ul>"
     for message in messages:
-        output += f"<li>{message}</li>"
+        message = message.split("\n")
+        if len(message) == 1:
+            output += "<li>" + message[0] + "</li>"
+        else:
+            output += "<li>" + message[0] + "<ul>"
+            for line in filter(bool, message[1:]):
+                output += "<li>" + line.lstrip("- ").lstrip("* ") + "</li>"
+            output += "</ul></li>"
     output += "</ul></details></li>"
     output += "</ul>"
     return output
