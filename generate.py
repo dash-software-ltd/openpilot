@@ -262,7 +262,7 @@ def generate_branch(local, remote, patches) -> str:
     output += "<ul>"
     output += f"<li>Supported hardware: {', '.join(supported_hardware)}</li>"
     output += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{local}</code></li>"
-    output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{local}">View source code on GitHub</a></li>'
+    output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/commits/{local}">View source code on GitHub</a></li>'
     output += "<li><details><summary>Change log:</summary>"
     output += "<ul>"
     for message in messages:
