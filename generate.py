@@ -228,8 +228,10 @@ def generate_branch(local, remote, patches) -> str:
     env = f"GIT_AUTHOR_DATE='{author_date}' GIT_COMMITTER_DATE='{commit_date}'"
 
     # Apply patches to the branch
+    messages = []
     for patch in patches:
         message = patch()
+        messages.append(message)
 
         # Commit the patch
         os.system("git add -A")
@@ -238,7 +240,12 @@ def generate_branch(local, remote, patches) -> str:
     output = f"<h3>{local}</h3>"
     output += "<ul>"
     output += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{local}</code></li>"
-    output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{local}">View on GitHub</a></li>'
+    output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{local}">View source code on GitHub</a></li>'
+    output += "<li><details><summary>Change log:</summary>"
+    output += "<ul>"
+    for message in messages:
+        output += f"<li>{message}</li>"
+    output += "</ul></details></li>"
     output += "</ul>"
     return output
 
