@@ -211,7 +211,7 @@ def prepare_op_repo():
     logging.info("Done setting up openpilot repo.")
 
 
-def generate_branch(local, remote, patches):
+def generate_branch(local, remote, patches) -> str:
     """
     Make a new branch from remote with patches applied
     """
@@ -235,8 +235,15 @@ def generate_branch(local, remote, patches):
         os.system("git add -A")
         os.system(f"{env} git commit -m '{message}'")
 
+    output = f"<h3>{local}</h3>"
+    output += "<ul>"
+    output += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{local}</code></li>"
+    output += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{local}">View on GitHub</a></li>'
+    output += "</ul>"
+    return output
 
-def generate_html(branch_names):
+
+def generate():
     # Restore docs branch
     os.system("git checkout --force docs")
 
@@ -244,6 +251,7 @@ def generate_html(branch_names):
     now = datetime.datetime.now()
     now_str = now.strftime("%Y-%m-%d %H:%M:%S UTC")
 
+    # Generate HTML output
     header = """
 <html>
 <head>
@@ -267,12 +275,10 @@ code {
         header += "\n"
 
     body = "<hr><h2>Branches</h2>\n"
-    for branch in branch_names:
-        body += f"<h3>{branch}</h3>"
-        body += "<ul>"
-        body += f"<li>Custom Software URL: <code>installer.comma.ai/dash-software-ltd/{branch}</code></li>"
-        body += f'<li><a href="https://github.com/dash-software-ltd/openpilot/tree/{branch}">View on GitHub</a></li>'
-        body += "</ul>\n"
+
+    # Generate branches
+    for local, remote, patches in BRANCHES:
+        body += generate_branch(local, remote, patches) + "\n"
 
     footer = f"""<hr>
 <p>
@@ -295,12 +301,7 @@ def main(push=True):
     logging.info("branches:")
     logging.info(pprint.pformat(branch_names))
 
-    # Generate branches
-    for local, remote, patches in BRANCHES:
-        generate_branch(local, remote, patches)
-
-    # Generate HTML output
-    generate_html(branch_names)
+    generate()
 
     if push:
         # Push branches
