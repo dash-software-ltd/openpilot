@@ -176,7 +176,7 @@ def hardware_human_readable(hardware: str) -> str:
     elif hardware == "tici":
         return '<a href="https://comma.ai/shop/comma-3x" target="_blank">comma 3/3X</a>'
     else:
-        return None
+        return hardware
 
 
 BRANCHES = [
@@ -251,7 +251,12 @@ def generate_branch(local, remote, patches) -> str:
         os.system("git add -A")
         os.system(f"{env} git commit -m '{message}'")
 
-    supported_hardware = map(hardware_human_readable, list_supported_hardware())
+    # skip custom branch
+    if local == "incognitojam":
+        return ""
+
+    supported_hardware = ["eon"] if local == "release2" else list_supported_hardware()
+    supported_hardware = map(hardware_human_readable, supported_hardware)
 
     output = f"<h3>{local}</h3>"
     output += "<ul>"
