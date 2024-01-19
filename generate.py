@@ -92,6 +92,11 @@ def patch_method(path: str, method_name: str, code: str):
             node.body = ast.parse(code).body
 
 
+def strip_github_workflows() -> str:
+    delete(".github/workflows")
+    return "remove github workflows"
+
+
 def patch_api() -> str:
     append("launch_env.sh", f'export API_HOST="{API_HOST}"')
     append("launch_env.sh", f'export ATHENA_HOST="{ATHENA_HOST}"')
@@ -165,7 +170,7 @@ BRANCHES = [
     (
         "master",
         "master",
-        [patch_api, patch_nav, patch_athena],
+        [strip_github_workflows, patch_api, patch_nav, patch_athena],
     ),
     (
         "master-ci",
