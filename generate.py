@@ -306,7 +306,7 @@ def main(push=True):
         # Push branches
         logging.info("Pushing branches to origin")
         for branch in branch_names:
-            os.system(f"git fetch origin {branch}")
+            # os.system(f"git fetch origin {branch}")
             os.system(f"git push --no-verify --force --set-upstream origin {branch}")
 
 
