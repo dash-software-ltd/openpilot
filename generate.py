@@ -174,7 +174,7 @@ def hardware_human_readable(hardware: str) -> str:
     if hardware == "eon":
         return "comma two"
     elif hardware == "tici":
-        return "comma three"
+        return '<a href="https://comma.ai/shop/comma-3x" target="_blank">comma 3/3X</a>'
     else:
         return None
 
