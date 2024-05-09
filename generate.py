@@ -13,9 +13,9 @@ import markdown
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-API_HOST = "https://api.retropilot.app"
-ATHENA_HOST = "wss://ws.retropilot.app"
-MAPS_HOST = "https://maps.retropilot.app"
+API_HOST = "https://api.bluepilot.app"
+ATHENA_HOST = "wss://ws.bluepilot.app"
+MAPS_HOST = "https://maps.bluepilot.app"
 
 FILE_ATHENAD = "selfdrive/athena/athenad.py"
 FILE_NAVD = "selfdrive/navd/navd.py"
@@ -291,7 +291,7 @@ def generate():
     header = """
 <html>
 <head>
-<title>RetroPilot Fork Generator</title>
+<title>bluepilot fork generator</title>
 <style>
 body {
     font-family: sans-serif;
