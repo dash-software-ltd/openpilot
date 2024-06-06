@@ -17,12 +17,21 @@ API_HOST = "https://api.bluepilot.app"
 ATHENA_HOST = "wss://ws.bluepilot.app"
 MAPS_HOST = "https://maps.bluepilot.app"
 
-FILE_ATHENAD = "selfdrive/athena/athenad.py"
+FILE_ATHENAD = ["selfdrive/athena/athenad.py", "system/athena/athenad.py"]
 FILE_NAVD = "selfdrive/navd/navd.py"
 
 
-def append(path: str, content: str, end_of_line="\n"):
-    with open(path, "a") as f:
+def get_path(path: str | list[str]) -> str:
+    if isinstance(path, str):
+        return path
+    for p in path:
+        if os.path.exists(p):
+            return p
+    raise ValueError(f"File not found: {path}")
+
+
+def append(path: str | list[str], content: str, end_of_line="\n"):
+    with open(get_path(path), "a") as f:
         f.write(content + end_of_line)
 
 
@@ -74,18 +83,18 @@ def patch_assignment(path: str, variable_name: str, value: str):
                 node.value = ast.parse(value).body[0].value
 
 
-def patch_method_noop(path: str, method_name: str):
+def patch_method_noop(path: str | list[str], method_name: str):
     """Replace method with a no-op 'return' statement"""
-    with ASTWriter(path) as tree:
+    with ASTWriter(get_path(path)) as tree:
         for node in ast.walk(tree):
             if not isinstance(node, ast.FunctionDef) or node.name != method_name:
                 continue
             node.body = [ast.parse("return").body[0]]
 
 
-def patch_method(path: str, method_name: str, code: str):
+def patch_method(path: str | list[str], method_name: str, code: str):
     """Replace method with custom code"""
-    with ASTWriter(path) as tree:
+    with ASTWriter(get_path(path)) as tree:
         for node in ast.walk(tree):
             if not isinstance(node, ast.FunctionDef) or node.name != method_name:
                 continue
