@@ -182,7 +182,7 @@ def list_supported_hardware() -> list[str]:
 
 def hardware_human_readable(hardware: str) -> str:
     if hardware == "eon":
-        return "comma two"
+        return "comma two, freon"
     elif hardware == "tici":
         return '<a href="https://comma.ai/shop/comma-3x" target="_blank">comma 3/3X</a>'
     else:
@@ -257,7 +257,7 @@ def generate_branch(local, remote, patches) -> str:
     # if local in ("incognitojam", ):
     #     return ""
 
-    supported_hardware = ["eon"] if local == "release2" else list_supported_hardware()
+    supported_hardware = ["eon"] if "release2" in local else list_supported_hardware()
     supported_hardware = list(map(hardware_human_readable, supported_hardware))
 
     output = f"<h3>{local}</h3>"
