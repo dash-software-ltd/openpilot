@@ -175,6 +175,16 @@ def patch_athena() -> str:
     )
 
 
+def patch_prime() -> str:
+    replace(
+        "selfdrive/ui/qt/widgets/prime.cc",
+        "https://connect.comma.ai/?pair=",
+        "https://bluepilot.app/?pair=",
+    )
+
+    return "prime: update QR code URL"
+
+
 def list_supported_hardware() -> list[str]:
     path = "system/hardware" if os.path.isdir("system/hardware") else "selfdrive/hardware"
     return list(filter(lambda x: os.path.isdir(f"{path}/{x}") and x != "pc", os.listdir(path)))
@@ -194,24 +204,24 @@ BRANCHES = [
     (
         "master",
         "master",
-        [strip_github_workflows, patch_api, patch_nav, patch_athena],
+        [strip_github_workflows, patch_api, patch_prime, patch_nav, patch_athena],
     ),
     (
         "nightly-3h-power-off",
         "nightly",
-        [patch_api, patch_nav, patch_athena, patch_power_monitoring],
+        [patch_api, patch_prime, patch_nav, patch_athena, patch_power_monitoring],
     ),
 ] + [
     (
         branch,
         branch,
-        [patch_api, patch_nav, patch_athena]
+        [patch_api, patch_prime, patch_nav, patch_athena]
     ) for branch in ["master-ci", "nightly", "devel-staging", "devel", "release3-staging", "release3"]
 ] + [
     (
         branch,
         branch,
-        [patch_api, patch_athena]
+        [patch_api, patch_prime, patch_athena]
     ) for branch in ["release2"]
 ]
 
