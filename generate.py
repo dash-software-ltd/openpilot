@@ -18,6 +18,7 @@ ATHENA_HOST = "wss://ws.bluepilot.app"
 MAPS_HOST = "https://maps.bluepilot.app"
 
 FILE_ATHENAD = ["selfdrive/athena/athenad.py", "system/athena/athenad.py"]
+FILE_POWER_MONITORING = ["system/hardware/power_monitoring.py", "selfdrive/thermald/power_monitoring.py"]
 FILE_NAVD = "selfdrive/navd/navd.py"
 
 
@@ -114,11 +115,11 @@ def patch_api() -> str:
 
 def patch_power_monitoring() -> str:
     replace(
-        "selfdrive/thermald/power_monitoring.py",
+        get_path(FILE_POWER_MONITORING),
         "MAX_TIME_OFFROAD_S = 30*3600",
         "MAX_TIME_OFFROAD_S = 3*3600",
     )
-    return "thermald: set MAX_TIME_OFFROAD_S to 3 hours"
+    return "hardwared: set MAX_TIME_OFFROAD_S to 3 hours"
 
 
 def patch_nav():
