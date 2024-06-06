@@ -167,7 +167,7 @@ def patch_athena() -> str:
 
 def list_supported_hardware() -> list[str]:
     path = "system/hardware" if os.path.isdir("system/hardware") else "selfdrive/hardware"
-    return filter(lambda x: os.path.isdir(f"{path}/{x}") and x != "pc", os.listdir(path))
+    return list(filter(lambda x: os.path.isdir(f"{path}/{x}") and x != "pc", os.listdir(path)))
 
 
 def hardware_human_readable(hardware: str) -> str:
@@ -256,7 +256,7 @@ def generate_branch(local, remote, patches) -> str:
         return ""
 
     supported_hardware = ["eon"] if local == "release2" else list_supported_hardware()
-    supported_hardware = map(hardware_human_readable, supported_hardware)
+    supported_hardware = list(map(hardware_human_readable, supported_hardware))
 
     output = f"<h3>{local}</h3>"
     output += "<ul>"
