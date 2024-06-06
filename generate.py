@@ -18,7 +18,7 @@ ATHENA_HOST = "wss://ws.bluepilot.app"
 MAPS_HOST = "https://maps.bluepilot.app"
 
 FILE_ATHENAD = ["selfdrive/athena/athenad.py", "system/athena/athenad.py"]
-FILE_POWER_MONITORING = ["system/hardware/power_monitoring.py", "selfdrive/thermald/power_monitoring.py"]
+FILE_POWER_MONITORING = ["system/hardware/power_monitoring.py", "system/thermald/power_monitoring.py", "selfdrive/thermald/power_monitoring.py"]
 FILE_NAVD = "selfdrive/navd/navd.py"
 
 
