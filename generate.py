@@ -212,7 +212,7 @@ BRANCHES = [
         branch,
         branch,
         [patch_api, patch_athena]
-    ) for branch in ["release2-staging", "release2"]
+    ) for branch in ["release2"]
 ]
 
 
