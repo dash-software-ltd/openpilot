@@ -127,10 +127,10 @@ def patch_nav():
     return "navd: use custom maps proxy"
 
 
-def patch_ford() -> str:
-    value = "FwQueryConfig(requests=[])"
-    patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", value)
-    return "ford: remove conflicting nissan fw queries"
+# def patch_ford() -> str:
+#     value = "FwQueryConfig(requests=[])"
+#     patch_assignment("selfdrive/car/nissan/values.py", "FW_QUERY_CONFIG", value)
+#     return "ford: remove conflicting nissan fw queries"
 
 
 def patch_athena() -> str:
@@ -196,30 +196,22 @@ BRANCHES = [
         [strip_github_workflows, patch_api, patch_nav, patch_athena],
     ),
     (
-        "master-ci",
-        "master-ci",
-        [patch_api, patch_nav, patch_athena],
-    ),
-    (
-        "release3",
-        "release3",
-        [patch_api, patch_nav, patch_athena],
-    ),
-    (
-        "release2",
-        "release2",
-        [patch_api, patch_athena],
-    ),
-    (
-        "master-ci-3h",
-        "master-ci",
+        "nightly-3h-power-off",
+        "nightly",
         [patch_api, patch_nav, patch_athena, patch_power_monitoring],
     ),
+] + [
     (
-        "incognitojam",
-        "master-ci",
-        [patch_api, patch_nav, patch_athena, patch_power_monitoring, patch_ford],
-    ),
+        branch,
+        branch,
+        [patch_api, patch_nav, patch_athena]
+    ) for branch in ["master-ci", "nightly", "devel-staging", "devel", "release3-staging", "release3"]
+] + [
+    (
+        branch,
+        branch,
+        [patch_api, patch_athena]
+    ) for branch in ["release2-staging", "release2"]
 ]
 
 
@@ -261,8 +253,8 @@ def generate_branch(local, remote, patches) -> str:
         os.system(f"{env} git commit -m '{message}'")
 
     # skip custom branch
-    if local == "incognitojam":
-        return ""
+    # if local in ("incognitojam", ):
+    #     return ""
 
     supported_hardware = ["eon"] if local == "release2" else list_supported_hardware()
     supported_hardware = list(map(hardware_human_readable, supported_hardware))
