@@ -216,7 +216,7 @@ BRANCHES = [
         branch,
         branch,
         [patch_api, patch_prime, patch_nav, patch_athena]
-    ) for branch in ["master-ci", "nightly", "devel-staging", "devel", "release3-staging", "release3"]
+    ) for branch in ["master-ci", "nightly", "devel", "release3-staging", "release3"]
 ] + [
     (
         branch,
